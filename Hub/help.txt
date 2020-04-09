@@ -1,4 +1,4 @@
-{
+{ car state
    "gear":0,✅ 
    "handbrake":False,✅ 
    "kinematics_estimated":"<KinematicsState>"{✅ 
@@ -39,3 +39,51 @@
    "speed":0.0,✅ 
    "timestamp":1586444108083211000✅ 
 }
+
+{ gps getGpsData
+   "gnss":{✅
+      "eph":0.30000004172325134,✅
+      "epv":0.40000003576278687,✅
+      "fix_type":3,✅
+      "geo_point":{✅
+         "altitude":123.2416763305664,✅
+         "latitude":47.64219087548877,✅
+         "longitude":-122.1465460990662✅
+      },
+      "time_utc":1586451174947413,✅
+      "velocity":{✅
+         "x_val":3.4285605465811386e-08,✅
+         "y_val":-4.165357267993386e-07,✅
+         "z_val":4.8676465524977175e-08✅
+      }
+   },
+   "is_valid":True,✅
+   "time_stamp":1586451174947420000✅
+}
+
+
+
+    def getImuData(self, imu_name = '', vehicle_name = ''):
+        return ImuData.from_msgpack(self.client.call('getImuData', imu_name, vehicle_name))
+
+    def getBarometerData(self, barometer_name = '', vehicle_name = ''):
+        return BarometerData.from_msgpack(self.client.call('getBarometerData', barometer_name, vehicle_name))
+
+    def getMagnetometerData(self, magnetometer_name = '', vehicle_name = ''):
+        return MagnetometerData.from_msgpack(self.client.call('getMagnetometerData', magnetometer_name, vehicle_name))
+
+    def getGpsData(self, gps_name = '', vehicle_name = ''):
+        return GpsData.from_msgpack(self.client.call('getGpsData', gps_name, vehicle_name))
+
+    def getDistanceSensorData(self, lidar_name = '', vehicle_name = ''):
+        return DistanceSensorData.from_msgpack(self.client.call('getDistanceSensorData', distance_sensor_name, vehicle_name))
+
+    def getLidarData(self, lidar_name = '', vehicle_name = ''):
+        return LidarData.from_msgpack(self.client.call('getLidarData', lidar_name, vehicle_name))
+        
+    def simGetLidarSegmentation(self, lidar_name = '', vehicle_name = ''):
+        return self.client.call('simGetLidarSegmentation', lidar_name, vehicle_name)
+
+
+
+setting.json naredi da so vsi senzori not
