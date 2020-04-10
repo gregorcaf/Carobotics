@@ -1,4 +1,11 @@
-{ car state
+call api like that to get info:
+http://127.0.0.1:5000/hub/CarState/gear
+or
+http://127.0.0.1:5000/hub/CarState/kinematics_estimated
+or
+http://127.0.0.1:5000/hub/CarState
+CarState
+{
    "gear":0,✅ 
    "handbrake":False,✅ 
    "kinematics_estimated":"<KinematicsState>"{✅ 
@@ -40,7 +47,8 @@
    "timestamp":1586444108083211000✅ 
 }
 
-{ gps getGpsData
+GpsData
+{ 
    "gnss":{✅
       "eph":0.30000004172325134,✅
       "epv":0.40000003576278687,✅
@@ -60,29 +68,78 @@
    "is_valid":True,✅
    "time_stamp":1586451174947420000✅
 }
+IMU
+{✅
+   "angular_velocity":{✅
+      "x_val":-0.0005081041599623859,✅
+      "y_val":-0.0004379096790216863,✅
+      "z_val":-0.0002393961913185194✅
+   },
+   "linear_acceleration":{✅
+      "x_val":-0.007412649691104889,✅
+      "y_val":-0.025515791028738022,✅
+      "z_val":-9.79927921295166✅
+   },
+   "orientation":{✅
+      "w_val":-0.8298202753067017,✅
+      "x_val":-0.0013894514413550496,✅
+      "y_val":-0.0008350536809302866,✅
+      "z_val":-0.5580284595489502✅
+   },
+   "time_stamp":1586510124121082000✅
+}
+Barometer
+{✅
+   "altitude":123.15780639648438,✅
+   "pressure":99853.6171875,✅
+   "qnh":1013.25,✅
+   "time_stamp":1586510762734913000✅
+}
+
+Magnetometer
+{✅
+   "magnetic_field_body":{✅
+      "x_val":0.11620362102985382,✅
+      "y_val":-0.2174719125032425,✅
+      "z_val":0.3497149646282196✅
+   },
+   "magnetic_field_covariance":[✅
+
+   ],
+   "time_stamp":1586511490030102000✅
+}
+Distance
+{✅
+   "distance":39.94074249267578,✅
+   "max_distance":40.0,✅
+   "min_distance":0.20000000298023224,✅
+   "relative_pose":{✅
+      "orientation":{✅
+         "w_val":1.0,✅
+         "x_val":0.0,✅
+         "y_val":0.0,✅
+         "z_val":0.0✅
+      },
+      "position":{✅
+         "x_val":0.0,✅
+         "y_val":0.0,✅
+         "z_val":0.0✅
+      }
+   },
+   "time_stamp":1586536193014202000✅ 
+}
 
 
 
-    def getImuData(self, imu_name = '', vehicle_name = ''):
-        return ImuData.from_msgpack(self.client.call('getImuData', imu_name, vehicle_name))
 
-    def getBarometerData(self, barometer_name = '', vehicle_name = ''):
-        return BarometerData.from_msgpack(self.client.call('getBarometerData', barometer_name, vehicle_name))
 
-    def getMagnetometerData(self, magnetometer_name = '', vehicle_name = ''):
-        return MagnetometerData.from_msgpack(self.client.call('getMagnetometerData', magnetometer_name, vehicle_name))
 
-    def getGpsData(self, gps_name = '', vehicle_name = ''):
-        return GpsData.from_msgpack(self.client.call('getGpsData', gps_name, vehicle_name))
 
-    def getDistanceSensorData(self, lidar_name = '', vehicle_name = ''):
-        return DistanceSensorData.from_msgpack(self.client.call('getDistanceSensorData', distance_sensor_name, vehicle_name))
 
-    def getLidarData(self, lidar_name = '', vehicle_name = ''):
-        return LidarData.from_msgpack(self.client.call('getLidarData', lidar_name, vehicle_name))
-        
-    def simGetLidarSegmentation(self, lidar_name = '', vehicle_name = ''):
-        return self.client.call('simGetLidarSegmentation', lidar_name, vehicle_name)
+//all
+//images
+//colision
+//control
 
 
 

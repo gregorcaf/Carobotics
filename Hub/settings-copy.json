@@ -1,0 +1,35 @@
+{
+  "SimMode" : "Car", 
+  "SettingsVersion" : 1.2, 
+  "SeeDocsAt" : "https://github.com/Microsoft/AirSim/blob/master/docs/settings.md",
+  "Vehicles": {
+     "PhysXCar": {
+         "VehicleType": "PhysXCar",
+         "AutoCreate": true,
+         "Sensors": {
+             "Barometer": {
+                 "SensorType": 1,
+                 "Enabled" : true
+                },
+            "Imu": {
+                 "SensorType": 2,
+                 "Enabled" : true
+                },
+            "Gps": {
+                 "SensorType": 3,
+                 "Enabled" : true
+                },
+            "Magnetometer": {
+                 "SensorType": 4,
+                 "Enabled" : true
+                },
+            "Distance": {
+                 "SensorType": 5,
+                 "Enabled" : true
+                }
+            }
+         }
+     }
+ }
+  
+ 
