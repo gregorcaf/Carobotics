@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import os
 import time
-from flask import jsonify, Flask, request
+from flask import jsonify, Flask, request, send_from_directory
 from functools import reduce
 from decimal import Decimal
 
@@ -14,11 +14,12 @@ getImuData = "IMU"
 getBarometerData = "Barometer"
 getMagnetometerData = "Magnetometer"
 getDistanceSensorData = "Distance"
-
+getCollisionInfo = "Collision"
 client = airsim.CarClient()
 client.confirmConnection()
 client.enableApiControl(True)
 car_controls = airsim.CarControls()
+collision_info = client.simGetCollisionInfo()
 
 app = Flask(__name__)
 #  endregion
@@ -186,6 +187,26 @@ def distance_attr3(attr1,attr2,attr3):
     except AttributeError:
         return ('', 204)
 #  endregion
+#  region getCollisionInfo
+@app.route("/hub/{}".format(getCollisionInfo))
+def collision_all():
+    return str(collision_info)
+
+
+@app.route("/hub/{}/<attr1>".format(getCollisionInfo))
+def collision_attr1(attr1):
+    try:
+        return str(getattr(collision_info, attr1))
+    except AttributeError:
+        return ('', 204)
+
+@app.route("/hub/{}/<attr1>/<attr2>".format(getCollisionInfo))
+def collision_attr2(attr1, attr2):
+    try:
+        return str(reduce(getattr,(attr1, attr2), collision_info))
+    except AttributeError:
+        return ('', 204)
+#  endregion
 #  region Canera
 @app.route("/hub/Camera/<attr1>/scene")
 def get_image_scene(attr1):
@@ -206,6 +227,48 @@ def get_image_depth_segmentation(attr1):
     return str(responses[0])
  #airsim.write_file(os.path.normpath('path/11.png'), responses[0].image_data_uint8)
 #  endregion
+#  endregion
+#  region Wether
+@app.route("/hub/weather/disable")
+def disable_weather():
+    client.simEnableWeather(False)
+    return("Disable weather")
+
+@app.route("/hub/weather/enable")
+def enable_weather():
+    client.simEnableWeather(True)
+    return("Enable weather")
+
+@app.route("/hub/weather")
+def wether():
+    rain = request.args.get("Rain")
+    if(rain!=None):
+        client.simSetWeatherParameter(airsim.WeatherParameter.Rain, float(rain))
+        print("works")
+    roadwetness = request.args.get("Roadwetness")
+    if(roadwetness!=None):
+        client.simSetWeatherParameter(airsim.WeatherParameter.Roadwetness, float(roadwetness))
+    snow = request.args.get("Snow")
+    if(snow!=None):
+        client.simSetWeatherParameter(airsim.WeatherParameter.Snow, float(snow))
+    road_snow = request.args.get("RoadSnow")
+    if(road_snow!=None):
+        client.simSetWeatherParameter(airsim.WeatherParameter.RoadSnow, float(road_snow))
+    maple_leaf = request.args.get("MapleLeaf")
+    if(maple_leaf!=None):
+        client.simSetWeatherParameter(airsim.WeatherParameter.MapleLeaf, float(maple_leaf))
+    road_leaf = request.args.get("RoadLeaf")
+    if(road_leaf!=None):
+        client.simSetWeatherParameter(airsim.WeatherParameter.RoadLeaf, float(road_leaf))
+    dust = request.args.get("Dust")
+    if(dust!=None):
+        dust.simSetWeatherParameter(airsim.WeatherParameter.Dust, float(dust))
+    fog = request.args.get("Fog")
+    if(fog!=None):
+        client.simSetWeatherParameter(airsim.WeatherParameter.Fog, float(fog))
+    return("Done")
+
+
 #  endregion
 #  region Control
 @app.route("/hub/control")
@@ -234,8 +297,25 @@ def control():
     client.setCarControls(car_controls)
     return("Done")
 
+@app.route("/hub/getControl")
+def get_control():
+    return str(client.getCarControls())
+
+@app.route("/hub/getControl/<attr1>".format(CarStateSensor))
+def get_control_attr1(attr1):
+    car = client.getCarControls()
+    try:
+        return str(getattr(car, attr1))
+    except AttributeError:
+        return ('', 204)
     
 #  endregion
+
+@app.route("/")
+def info():
+    return send_from_directory("","help.txt")
+
+
 
 if __name__ == "__main__":
     app.run()

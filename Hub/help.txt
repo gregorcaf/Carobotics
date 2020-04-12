@@ -129,11 +129,60 @@ Distance
    "time_stamp":1586536193014202000✅ 
 }
 
+collision
+{✅ 
+   "has_collided":False,✅ 
+   "impact_point":{✅ 
+      "x_val":0.0,✅
+      "y_val":0.0,✅ 
+      "z_val":0.0✅ 
+   },
+   "normal":{✅ 
+      "x_val":0.0,✅ 
+      "y_val":0.0,✅ 
+      "z_val":0.0✅ 
+   },
+   "object_id":-1,✅ 
+   "object_name":"",✅ 
+   "penetration_depth":0.0,✅ 
+   "position":{✅ 
+      "x_val":0.0,✅ 
+      "y_val":0.0,✅ 
+      "z_val":0.0✅ 
+   },
+   "time_stamp":0✅ 
+}
+
+
 /hub/Camera/<attr1>/scene✅ 
 /hub/Camera/<attr1>/depthvis✅ 
 /hub/Camera/<attr1>/depthperspective✅ 
 /hub/Camera/<attr1>/segmentation✅ 
 swap attr1 whit camera name
+
+
+{getControl✅ 
+   "brake":0.0,✅ 
+   "gear_immediate":True,✅ 
+   "handbrake":False,✅ 
+   "is_manual_gear":False,✅ 
+   "manual_gear":0,✅ 
+   "steering":0.0,✅ 
+   "throttle":0.0✅ 
+}
+
+## not yet working in unity, airsim needs update 
+pošleš kot argumet posta in dodaš številko med 0 in 1
+Rain = 0✅ 
+Roadwetness = 1✅ 
+Snow = 2✅
+RoadSnow = 3✅ 
+MapleLeaf = 4✅ 
+RoadLeaf = 5✅ 
+Dust = 6✅ 
+Fog = 7✅ 
+Enabled = 8✅ 
+
 
 class CarControls(MsgpackMixin):
     throttle = 0.0✅ 
@@ -145,4 +194,4 @@ class CarControls(MsgpackMixin):
     gear_immediate = True✅ 
 
 
-    127.0.0.1:5000/hub/control?throttle=0&steering=0&brake=0&handbrake=False
+127.0.0.1:5000/hub/control?throttle=0&steering=0&brake=0&handbrake=False
