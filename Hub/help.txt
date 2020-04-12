@@ -129,18 +129,20 @@ Distance
    "time_stamp":1586536193014202000✅ 
 }
 
+/hub/Camera/<attr1>/scene✅ 
+/hub/Camera/<attr1>/depthvis✅ 
+/hub/Camera/<attr1>/depthperspective✅ 
+/hub/Camera/<attr1>/segmentation✅ 
+swap attr1 whit camera name
+
+class CarControls(MsgpackMixin):
+    throttle = 0.0✅ 
+    steering = 0.0✅ 
+    brake = 0.0✅ 
+    handbrake = False✅ 
+    is_manual_gear = False✅ 
+    manual_gear = 0✅ 
+    gear_immediate = True✅ 
 
 
-
-
-
-
-
-//all
-//images
-//colision
-//control
-
-
-
-setting.json naredi da so vsi senzori not
+    127.0.0.1:5000/hub/control?throttle=0&steering=0&brake=0&handbrake=False

@@ -3,23 +3,26 @@ import cv2
 import numpy as np
 import os
 import time
-from flask import jsonify, Flask
+from flask import jsonify, Flask, request
 from functools import reduce
+from decimal import Decimal
 
+#  region Global var
 CarStateSensor = "CarState"
 getGpsData = "GpsData"
 getImuData = "IMU"
 getBarometerData = "Barometer"
 getMagnetometerData = "Magnetometer"
 getDistanceSensorData = "Distance"
+
 client = airsim.CarClient()
 client.confirmConnection()
 client.enableApiControl(True)
 car_controls = airsim.CarControls()
 
-
 app = Flask(__name__)
-
+#  endregion
+#  region AirSim Api
 @app.route("/hub/disable")
 def disable():
     client.enableApiControl(False)
@@ -29,7 +32,7 @@ def disable():
 def enable():
     client.enableApiControl(True)
     return("Enable")
-
+#   endregion
 #  region getInfo
 #  region CarState
 @app.route("/hub/{}".format(CarStateSensor))
@@ -183,36 +186,58 @@ def distance_attr3(attr1,attr2,attr3):
     except AttributeError:
         return ('', 204)
 #  endregion
+#  region Canera
+@app.route("/hub/Camera/<attr1>/scene")
+def get_image_scene(attr1):
+    responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.Scene)]) 
+   
+    return str(responses[0])
+@app.route("/hub/Camera/<attr1>/depthvis")
+def get_image_depth_vis(attr1):
+    responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.DepthVis, True)]) 
+    return str(responses[0])
+@app.route("/hub/Camera/<attr1>/depthperspective")
+def get_image_depth_perspective(attr1):
+    responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.DepthPerspective, True)]) 
+    return str(responses[0])
+@app.route("/hub/Camera/<attr1>/segmentation")
+def get_image_depth_segmentation(attr1):
+    responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.Segmentation, True)]) 
+    return str(responses[0])
+ #airsim.write_file(os.path.normpath('path/11.png'), responses[0].image_data_uint8)
+#  endregion
+#  endregion
+#  region Control
+@app.route("/hub/control")
+def control():
+    throttle = request.args.get("throttle")
+    if(throttle!=None):
+        car_controls.throttle = float(throttle)
+    steering = request.args.get("steering")
+    if(steering!=None):
+        car_controls.steering = float(steering)
+    brake = request.args.get("brake")
+    if(brake!=None):
+        car_controls.brake = float(brake)
+    handbrake = request.args.get("handbrake")
+    if(handbrake!=None):
+        car_controls.handbrake = eval(handbrake)
+    is_manual_gear = request.args.get("is_manual_gear")
+    if(is_manual_gear!=None):
+        car_controls.is_manual_gear = eval(is_manual_gear)
+    manual_gear = request.args.get("manual_gear")
+    if(manual_gear!=None):
+        car_controls.manual_gear = int(manual_gear)
+    gear_immediate = request.args.get("gear_immediate")
+    if(gear_immediate!=None):
+        car_controls.gear_immediate = eval(gear_immediate)
+    client.setCarControls(car_controls)
+    return("Done")
+
+    
 #  endregion
 
-
-def getImage():
-    responses = client.simGetImages([
-    airsim.ImageRequest("0", airsim.ImageType.DepthVis),  #depth visualization image
-    airsim.ImageRequest("1", airsim.ImageType.DepthPerspective, True), #depth in perspective projection
-    airsim.ImageRequest("3", airsim.ImageType.Scene), #scene vision image in png format
-    airsim.ImageRequest("1", airsim.ImageType.Scene, False, False)])  #scene vision image in uncompressed RGB array
-    print('Retrieved images: %d', len(responses))
-    myint = 7
-    print(responses[2])
-    #for response in responses:
-    #    filename = '/Users/nejcfirbas/Desktop/' + str(myint)
-    #    myint = myint + 1
-    #    if response.pixels_as_float:
-    #        print("Type %d, size %d" % (response.image_type, len(response.image_data_float)))
-    #        airsim.write_pfm(os.path.normpath(filename + '.pfm'), airsim.get_pfm_array(response))
-    #    elif response.compress: #png format
-    #        print("Type %d, size %d" % (response.image_type, len(response.image_data_uint8)))
-    #        airsim.write_file(os.path.normpath(filename + '.png'), response.image_data_uint8)
-    #    else: #uncompressed array
-    #        print("Type %d, size %d" % (response.image_type, len(response.image_data_uint8)))
-    #        img1d = np.fromstring(response.image_data_uint8, dtype=np.uint8) # get numpy array
-    #        img_rgb = img1d.reshape(response.height, response.width, 3) # reshape array to 3 channel image array H X W X 3
-    #        cv2.imwrite(os.path.normpath(filename + '.png'), img_rgb) # write to png 
-
-
 if __name__ == "__main__":
-    getImage()
     app.run()
 
     
