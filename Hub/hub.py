@@ -159,13 +159,13 @@ def magnetometer_attr2(attr1,attr2):
 #  region getDistanceSensorData
 @app.route("/hub/{}".format(getDistanceSensorData))
 def distance_all():
-    car = client.getDistanceSensorData();
+    car = client.getDistanceSensorData()
     return str(car)
 
 
 @app.route("/hub/{}/<attr1>".format(getDistanceSensorData))
 def distance_attr1(attr1):
-    car = client.getDistanceSensorData();
+    car = client.getDistanceSensorData()
     try:
         return str(getattr(car, attr1))
     except AttributeError:
@@ -173,7 +173,7 @@ def distance_attr1(attr1):
 
 @app.route("/hub/{}/<attr1>/<attr2>".format(getDistanceSensorData))
 def distance_attr2(attr1,attr2):
-    car = client.getDistanceSensorData();
+    car = client.getDistanceSensorData()
     try:
         return str(reduce(getattr,(attr1, attr2), car))
     except AttributeError:
@@ -181,7 +181,7 @@ def distance_attr2(attr1,attr2):
 
 @app.route("/hub/{}/<attr1>/<attr2>/<attr3>".format(getDistanceSensorData))
 def distance_attr3(attr1,attr2,attr3):
-    car = client.getDistanceSensorData();
+    car = client.getDistanceSensorData()
     try:
         return str(reduce(getattr,(attr1, attr2, attr3), car))
     except AttributeError:
@@ -271,7 +271,7 @@ def wether():
 
 #  endregion
 #  region Control
-@app.route("/hub/control")
+@app.route("/hub/control", methods = ['POST'])
 def control():
     throttle = request.args.get("throttle")
     if(throttle!=None):
@@ -301,7 +301,7 @@ def control():
 def get_control():
     return str(client.getCarControls())
 
-@app.route("/hub/getControl/<attr1>".format(CarStateSensor))
+@app.route("/hub/getControl/<attr1>")
 def get_control_attr1(attr1):
     car = client.getCarControls()
     try:
