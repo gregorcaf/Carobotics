@@ -12,13 +12,14 @@ amplification = 2
 # 15 for generated / 15 for recorded
 middleValue = 15
 
+# 2 for generated / 1 for recorded
+steeringChannel = 1
+
 inHigh = 0
 currentChannel = 0
 samplesSinceHigh = 0
 channels = np.zeros(8)
-channels.fill(15)
-maxValue = 15
-minValue = 100
+channels.fill(middleValue)
 
 cleaned_channels = np.zeros(8)
 
@@ -58,8 +59,6 @@ def print_sound(indata, outdata, frames, time, status):
     global samplesSinceHigh
     global channels
     global cleaned_channels
-    global maxValue
-    global minValue
     global amplification
     global middleValue
 
@@ -73,13 +72,7 @@ def print_sound(indata, outdata, frames, time, status):
             inHigh = 1
             pulse_time = sample_time * samplesSinceHigh * 10000
             samplesSinceHigh = 0
-            # print(pulse_time)
-            if pulse_time > maxValue:
-                maxValue = pulse_time
-                print(maxValue)
-            if pulse_time < minValue:
-                minValue = pulse_time
-                print(minValue)
+            print(pulse_time)
             if pulse_time > 30:
                 currentChannel = 0
                 continue
@@ -114,7 +107,7 @@ def print_sound(indata, outdata, frames, time, status):
             q.put(data_to_plot)
             data_to_plot = np.zeros((1, 8))
 
-    send_to_hub(cleaned_channels[0][0], cleaned_channels[0][1], 0)
+    send_to_hub(cleaned_channels[0][0], cleaned_channels[0][steeringChannel], 0)
 
 
 if __name__ == "__main__":
