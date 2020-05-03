@@ -275,12 +275,19 @@ def wether():
 def control():
     throttle = request.args.get("throttle")
     if(throttle!=None):
-        car_controls.throttle = float(throttle)
+        if float(throttle) >= 0:
+            car_controls.throttle = float(throttle) 
+            car_controls.is_manual_gear = False;
+            car_controls.manual_gear = 0
+        else:
+            car_controls.is_manual_gear = True;
+            car_controls.manual_gear = -1
+            car_controls.throttle = car_controls.brake = float(throttle)  # AirSim bug
     steering = request.args.get("steering")
     if(steering!=None):
         car_controls.steering = float(steering)
     brake = request.args.get("brake")
-    if(brake!=None):
+    if(brake!=None and car_controls.throttle >= 0 ):
         car_controls.brake = float(brake)
     handbrake = request.args.get("handbrake")
     if(handbrake!=None):
