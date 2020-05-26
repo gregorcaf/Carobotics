@@ -162,5 +162,7 @@ while capture.isOpened():
         # play the sound
         print("------------")
 
+
 cv2.destroyAllWindows()
 capture.release()
+
