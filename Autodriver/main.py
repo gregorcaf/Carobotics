@@ -23,7 +23,7 @@ class KalmanFilter(object):
 
 class AutoDriver():
     def __init__(self, objectMass, objectMaxThrustForce, objectNeutralBreakForce, desiredDistance):
-        '''
+        """
         Inicializacija AutoLander implementacije.
         Tu prejmete informacije o letalniku.
 
@@ -38,34 +38,73 @@ class AutoDriver():
 
         desired distance - float
             željena oddaljenost objekta od tarče
-        '''
-        self.distanceFilt = 0
-        self.objectNeutralBreakForce = objectNeutralBreakForce
+        """
 
+        # Initialize defaults
+        self.distanceFilt = 0
+        self.timePrevious = 0
+        self.currentThrust = 0
+
+        # Initialize kalman
+        self.Q = 0.0001
+        self.R = 35
+        self.posteri_estimate_initial = 0.0
+        self.posteri_error_estimate_initial = 1.0
+        self.priori_estimate = self.posteri_estimate_initial
+        self.priori_error_estimate = self.posteri_error_estimate_initial + self.Q
+        self.blending_factor = 0
+        self.posteri_estimate = 0
+        self.posteri_error_estimate = 0
+
+        # Initialize PID
+        self.pid_P = -10.0
+        self.pid_I = -2.5
+        self.pid_D = 0.01
+        self.pidTarget = desiredDistance
+        self.pidError = 0
+        self.pidIntegral = 0
+        
     def updateMeasurement(self, time, distance):
-        '''
+        """
         Prejemek posamezne meritve.
         time - float
             čas zajema, v s
 
         distance - float
             izmerjena oddaljenost do objekta pred vozilom v m
-        '''
-        self.distanceFilt = self.distanceFilt * 0.5 + distance * 0.5  # osnovno nizko sito - spremenite
-        self.currentThrust = 0  # vozilo stoji na miru - spremenite
+        """
 
-    # object properties - do not touch!!!
+        # Kalman filter
+        self.priori_estimate = self.posteri_estimate
+        self.priori_error_estimate = self.priori_error_estimate + self.Q
+
+        self.blending_factor = self.priori_error_estimate / (self.priori_error_estimate + self.R)
+        self.posteri_estimate = self.priori_estimate + self.blending_factor * (distance - self.priori_estimate)
+        self.posteri_error_estimate = (1 - self.blending_factor) * self.priori_error_estimate
+        self.distanceFilt = self.posteri_estimate
+
+        # PID controll
+        previous_pid_error = self.pidError
+        previous_pid_integral = self.pidIntegral
+        self.pidError = self.pidTarget - self.distanceFilt
+        self.pidIntegral = previous_pid_integral + previous_pid_error * (time - self.timePrevious)
+        pid_derivative = (self.pidError - previous_pid_error) / (time - self.timePrevious)
+        self.currentThrust = self.pid_P * self.pidError + self.pid_I * self.pidIntegral + self.pid_D * pid_derivative
+
+        self.timePrevious = time
+
     @property
     def distanceFiltered(self):
-        '''
+        """
         Tukaj vrnete trenutno oddaljenost ocenjeno z filtri.
         To omogoča kasnejši izris, vrnete vašo interno spremenljivko.
-        '''
+        """
         return self.distanceFilt
-
+    
     @property
     def thrust(self):
-        '''
+        """
         Tukaj vrnete relativno količino moči motorjev, vrednost med 0 in 1.
-        '''
+        """
         return self.currentThrust
+
