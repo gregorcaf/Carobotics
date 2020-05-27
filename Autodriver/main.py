@@ -3,7 +3,6 @@ import math
 
 
 class KalmanFilter(object):
-
     def __init__(self, process_variance, estimated_measurement_variance):
         self.process_variance = process_variance
         self.estimated_measurement_variance = estimated_measurement_variance
