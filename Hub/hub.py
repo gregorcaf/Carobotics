@@ -2,6 +2,8 @@ import airsim
 import cv2
 import numpy as np
 import os
+import base64
+import json
 import time
 from flask import jsonify, Flask, request, send_from_directory
 from functools import reduce
@@ -211,8 +213,7 @@ def collision_attr2(attr1, attr2):
 @app.route("/hub/Camera/<attr1>/scene")
 def get_image_scene(attr1):
     responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.Scene)]) 
-   
-    return str(responses[0])
+    return str(base64.b64encode(responses[0].image_data_uint8))
 @app.route("/hub/Camera/<attr1>/depthvis")
 def get_image_depth_vis(attr1):
     responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.DepthVis, True)]) 
@@ -279,6 +280,7 @@ def control():
             car_controls.throttle = float(throttle) 
             car_controls.is_manual_gear = False;
             car_controls.manual_gear = 0
+            car_controls.brake = 0
         else:
             car_controls.is_manual_gear = True;
             car_controls.manual_gear = -1
