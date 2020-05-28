@@ -1,26 +1,37 @@
 import numpy as np
+import json
+import pickle
 import requests
 import time
 import cv2
+import base64
 
-frame_1 = requests.get("http://127.0.0.1:5000/hub/control/hub/Camera/0/scene")
+text = requests.get("http://127.0.0.1:5000/hub/Camera/0/scene")
+nparr = np.fromstring(base64.b64decode(text), np.uint8)
+frame_1 = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+
 time.sleep(0.25)
-frame_2 = requests.get("http://127.0.0.1:5000/hub/control/hub/Camera/0/scene")
 
-scale_value = 0.7
+text = requests.get("http://127.0.0.1:5000/hub/Camera/0/scene")
+nparr = np.fromstring(base64.b64decode(text), np.uint8)
+frame_2 = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+
+scale_value = 2
 threshold_factor = 0.2
 
 # read image in grayscale
 # frame_1 = cv2.imread("middle_1.png", 0)
 # frame_2 = cv2.imread("middle_2.png", 0)
 
-# convert from BGR to GRAY
-frame_1 = cv2.cvtColor(frame_1, cv2.COLOR_BGR2GRAY)
-frame_2 = cv2.cvtColor(frame_2, cv2.COLOR_BGR2GRAY)
+# print("TYPE: ", type(frame_1))
 
-# resize image
-frame_1 = cv2.resize(frame_1, None, fx=scale_value, fy=scale_value)
-frame_2 = cv2.resize(frame_2, None, fx=scale_value, fy=scale_value)
+# convert from BGR to GRAY
+# frame_1 = cv2.cvtColor(frame_1, cv2.COLOR_BGR2GRAY)
+# frame_2 = cv2.cvtColor(frame_2, cv2.COLOR_BGR2GRAY)
+
+# resize image todo
+# frame_1 = cv2.resize(frame_1, None, fx=scale_value, fy=scale_value)
+# frame_2 = cv2.resize(frame_2, None, fx=scale_value, fy=scale_value)
 
 # Parameters for Shi-Tomasi corner detection
 feature_params = dict(maxCorners=300, qualityLevel=0.2, minDistance=2, blockSize=7)
@@ -52,7 +63,7 @@ for i in range(val_min):
     if a < c:
         x_val += 1
         x_sum += abs(a - c)
-    else:
+    elif a > c:
         x_val -= 1
         x_sum -= abs(a - c)
 
@@ -81,10 +92,9 @@ print("threshold: ", threshold)
 print("x_coordinates_val: ", x_val)
 print("sum_val: ", x_sum)
 
-''' TESTING
+''' TESTING '''
 cv2.imshow("img", frame_1)
 cv2.waitKey(3000)
 cv2.imshow("img", frame_2)
 cv2.waitKey(3000)
 cv2.destroyAllWindows()
-'''
