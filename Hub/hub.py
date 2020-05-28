@@ -213,7 +213,7 @@ def collision_attr2(attr1, attr2):
 @app.route("/hub/Camera/<attr1>/scene")
 def get_image_scene(attr1):
     responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.Scene)]) 
-    return str(base64.b64encode(responses[0].image_data_uint8))
+    return str(base64.b64encode(responses[0].image_data_uint8).decode('ascii'))
 @app.route("/hub/Camera/<attr1>/depthvis")
 def get_image_depth_vis(attr1):
     responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.DepthVis, True)]) 
