@@ -92,9 +92,10 @@ print("threshold: ", threshold)
 print("x_coordinates_val: ", x_val)
 print("sum_val: ", x_sum)
 
-''' TESTING '''
+''' TESTING 
 cv2.imshow("img", frame_1)
 cv2.waitKey(3000)
 cv2.imshow("img", frame_2)
 cv2.waitKey(3000)
 cv2.destroyAllWindows()
+'''
