@@ -1,13 +1,22 @@
 import numpy as np
+import requests
 import time
 import cv2
 
-start_time = time.time()
-scale_value = 0.3
+frame_1 = requests.get("http://127.0.0.1:5000/hub/control/hub/Camera/0/scene")
+time.sleep(0.25)
+frame_2 = requests.get("http://127.0.0.1:5000/hub/control/hub/Camera/0/scene")
+
+scale_value = 0.5
+threshold_factor = 0.2
 
 # read image in grayscale
-frame_1 = cv2.imread("longboard_3.png", 0)
-frame_2 = cv2.imread("longboard_1.png", 0)
+# frame_1 = cv2.imread("middle_1.png", 0)
+# frame_2 = cv2.imread("middle_2.png", 0)
+
+# convert from BGR to GRAY
+frame_1 = cv2.cvtColor(frame_1, cv2.COLOR_BGR2GRAY)
+frame_2 = cv2.cvtColor(frame_2, cv2.COLOR_BGR2GRAY)
 
 # resize image
 frame_1 = cv2.resize(frame_1, None, fx=scale_value, fy=scale_value)
@@ -29,21 +38,16 @@ prev_val, status2, error2 = cv2.calcOpticalFlowPyrLK(frame_2, frame_1, next_corn
 good_new1 = next_val[status1 == 1]
 good_new2 = prev_val[status2 == 1]
 
-'''
-for i, (new, old) in enumerate(zip(good_new1, good_old1)):
-    a, b = new.ravel()
-    points_1.append(np.array([a, b]))
-    frame_1 = cv2.circle(frame_1, (a, b), 3, (0, 255, 0), -1)
-'''
-
 val_min = min(len(good_new1), len(good_new2))
 x_val = 0
 x_sum = 0
+
+# iterate through array
 for i in range(val_min):
     a, b = good_new1[i][0], good_new1[i][1]
     c, d = good_new2[i][0], good_new2[i][1]
-    # frame_1 = cv2.circle(frame_1, (a, b), 3, (0, 255, 0), -1)
-    # frame_2 = cv2.circle(frame_2, (c, d), 3, (0, 255, 0), -1)
+    frame_1 = cv2.circle(frame_1, (a, b), 3, (0, 255, 0), -1)
+    frame_2 = cv2.circle(frame_2, (c, d), 3, (0, 255, 0), -1)
 
     if a < c:
         x_val += 1
@@ -52,17 +56,32 @@ for i in range(val_min):
         x_val -= 1
         x_sum -= abs(a - c)
 
+threshold = int(val_min * threshold_factor)
 
-if x_val > 0:
+if threshold >= abs(x_val):
+    print("no change")
+    params = {
+        "steering": 0.0
+    }
+elif x_val > 0:
     print("going right")
+    params = {
+        "steering": 0.5
+    }
 else:
     print("going left")
+    params = {
+        "steering": -0.5
+    }
 
+url = "http://127.0.0.1:5000/hub/control"
+requests.post(url, params=params)
+
+print("threshold: ", threshold)
 print("x_coordinates_val: ", x_val)
 print("sum_val: ", x_sum)
-print("--- %s seconds ---" % (time.time() - start_time))
 
-'''
+''' TESTING
 cv2.imshow("img", frame_1)
 cv2.waitKey(3000)
 cv2.imshow("img", frame_2)
