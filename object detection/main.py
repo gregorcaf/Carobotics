@@ -1,9 +1,7 @@
 import numpy as np
 import cv2
 import sounddevice as sd
-import librosa
-import soundfile as sf
-import sys
+from scipy.io import wavfile
 
 # REGIONS OF DETECTED OBJECTS
 # 1...bottom left
@@ -19,7 +17,7 @@ import sys
 
 # loading model, configuration, sound
 net = cv2.dnn.readNet("yolov3.weights", "yolov3.cfg")
-sound, fs = librosa.load('sound.mp3')
+fs, sound = wavfile.read("sound.wav")
 
 with open("classes.txt", "r") as f:
     classes = [line.strip() for line in f.readlines()]
@@ -27,12 +25,14 @@ with open("classes.txt", "r") as f:
 layer_names = net.getLayerNames()
 output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
-scale_value = 1  # 1...fully sized frame
+scale_value = 0.5  # 1...fully sized frame
 fps_value = 4  # 1...every frame, 2...every second frame, 3...every third frame, etc.
 color_value = 0
 index = 0
 
-capture = cv2.VideoCapture("street.mp4")
+is_sound = False
+
+capture = cv2.VideoCapture("test_1.mp4")
 
 width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH) * scale_value)
 height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT) * scale_value)
@@ -49,6 +49,7 @@ while 1:
 
     # DETECTING OBJECTS
     if index % fps_value == 0:
+        is_sound = False
         frame = cv2.resize(frame, None, fx=scale_value, fy=scale_value)
         blob = cv2.dnn.blobFromImage(frame, scalefactor=0.00392, size=(416, 416), mean=(0, 0, 0), swapRB=True,
                                      crop=False)
@@ -118,23 +119,17 @@ while 1:
             print("position: ", positions[i], "\n")
 
             if positions[i] > 5:
-                # green
-                color_value = (0, 255, 0)  # BGR
+                color_value = (0, 255, 0)  # green, BGR
             elif positions[i] == 2 or positions[i] == 3 or positions[i] == 4:
-                # red
-                color_value = (0, 0, 255)  # BGR
+                color_value = (0, 0, 255)  # red, BGR
+                is_sound = True
             else:
-                # orange
-                color_value = (0, 165, 255)  # BGR
+                color_value = (0, 165, 255)  # orange, BGR
 
             # display bounding box and label
             cv2.rectangle(frame, pt1=(x, y), pt2=(x + w, y + h), color=color_value, thickness=2)
             cv2.putText(frame, text=labels[i], org=(x, y), fontFace=font, fontScale=0.5, color=(255, 255, 0),
                         thickness=2)
-
-            if color_value == (0, 0, 255):
-                sd.play(sound, fs)
-                sd.wait()
 
         cv2.line(frame, pt1=(width // 5, height), pt2=(width // 5, 0), color=(0, 0, 0), thickness=2)
         cv2.line(frame, pt1=(int(width / (5 / 2)), height), pt2=(int(width / (5 / 2)), 0), color=(0, 0, 0),
@@ -150,6 +145,10 @@ while 1:
         k = cv2.waitKey(1)
         if k & 0xFF == 27:
             break
+
+        if is_sound:
+            sd.play(sound, fs)
+            sd.wait()
 
         '''
         frames.append(frame)
