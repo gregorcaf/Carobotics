@@ -68,6 +68,7 @@ for i in range(val_min):
         x_sum -= abs(a - c)
 
 threshold = int(val_min * threshold_factor)
+params = 0
 
 if threshold >= abs(x_val):
     print("no change")
