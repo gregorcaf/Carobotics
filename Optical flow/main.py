@@ -18,7 +18,7 @@ posteri_error_estimate = 0
 pid_P = -10.0
 pid_I = -2.5
 pid_D = 0.01
-pid_target = 150
+pid_target = 180
 pid_error = 0
 pid_error_avg = 0
 pid_integral = 0
@@ -82,13 +82,13 @@ while True:
     if xNum > 0:
         print("going right")
         params = {
-            "steering": 0.5,
+            "steering": 0.4,
             "throttle": 0.25,
         }
     elif xNum < 0:
         print("going left")
         params = {
-            "steering": -0.5,
+            "steering": -0.4,
             "throttle": 0.25,
         }
 
@@ -119,7 +119,8 @@ while True:
     time_previous = time
 
     # calculate current thrust with PID values
-    params["throttle"] = pid_P * pid_error + pid_I * pid_integral + pid_D * pid_derivative
+    # params["throttle"] = -(pid_P * pid_error + pid_I * pid_integral + pid_D * pid_derivative)/100
+    params["throttle"] = (dist - 160) / 300
 
     print("Points: " + str(xNum))
     print("Distance: " + str(dist))
