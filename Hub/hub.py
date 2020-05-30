@@ -217,15 +217,15 @@ def get_image_scene(attr1):
 @app.route("/hub/Camera/<attr1>/depthvis")
 def get_image_depth_vis(attr1):
     responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.DepthVis, True)]) 
-    return str(responses[0])
+    return str(base64.b64encode(responses[0].image_data_uint8).decode('ascii'))
 @app.route("/hub/Camera/<attr1>/depthperspective")
 def get_image_depth_perspective(attr1):
     responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.DepthPerspective, True)]) 
-    return str(responses[0])
+    return str(base64.b64encode(responses[0].image_data_uint8).decode('ascii'))
 @app.route("/hub/Camera/<attr1>/segmentation")
 def get_image_depth_segmentation(attr1):
     responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.Segmentation, True)]) 
-    return str(responses[0])
+    return str(base64.b64encode(responses[0].image_data_uint8).decode('ascii'))
  #airsim.write_file(os.path.normpath('path/11.png'), responses[0].image_data_uint8)
 #  endregion
 #  endregion
