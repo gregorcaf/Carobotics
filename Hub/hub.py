@@ -212,19 +212,19 @@ def collision_attr2(attr1, attr2):
 #  region Canera
 @app.route("/hub/Camera/<attr1>/scene")
 def get_image_scene(attr1):
-    responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.Scene)]) 
+    responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.Scene, False, True)])
     return str(base64.b64encode(responses[0].image_data_uint8).decode('ascii'))
 @app.route("/hub/Camera/<attr1>/depthvis")
 def get_image_depth_vis(attr1):
-    responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.DepthVis, True)]) 
+    responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.DepthVis, False, True)])
     return str(base64.b64encode(responses[0].image_data_uint8).decode('ascii'))
 @app.route("/hub/Camera/<attr1>/depthperspective")
 def get_image_depth_perspective(attr1):
-    responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.DepthPerspective, True)]) 
+    responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.DepthPerspective, False, True)])
     return str(base64.b64encode(responses[0].image_data_uint8).decode('ascii'))
 @app.route("/hub/Camera/<attr1>/segmentation")
 def get_image_depth_segmentation(attr1):
-    responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.Segmentation, True)]) 
+    responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.Segmentation, False, True)])
     return str(base64.b64encode(responses[0].image_data_uint8).decode('ascii'))
  #airsim.write_file(os.path.normpath('path/11.png'), responses[0].image_data_uint8)
 #  endregion
@@ -278,11 +278,11 @@ def control():
     if(throttle!=None):
         if float(throttle) >= 0:
             car_controls.throttle = float(throttle) 
-            car_controls.is_manual_gear = False;
+            car_controls.is_manual_gear = False
             car_controls.manual_gear = 0
             car_controls.brake = 0
         else:
-            car_controls.is_manual_gear = True;
+            car_controls.is_manual_gear = True
             car_controls.manual_gear = -1
             car_controls.throttle = car_controls.brake = float(throttle)  # AirSim bug
     steering = request.args.get("steering")
@@ -325,8 +325,6 @@ def info():
     return send_from_directory("","help.txt")
 
 
-
 if __name__ == "__main__":
     app.run()
 
-    
