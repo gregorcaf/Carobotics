@@ -3,26 +3,19 @@ import requests
 import time
 import cv2
 import base64
-
-R = 35
-Q = 0.0001
-posteri_estimate_initial = 0.0
-posteri_error_estimate_initial = 1.0
-priori_estimate = posteri_estimate_initial
-priori_error_estimate = posteri_error_estimate_initial + Q
-blending_factor = 0
-posteri_estimate = 0
-posteri_error_estimate = 0
+from datetime import datetime
 
 # Initialize PID
-pid_P = -10.0
-pid_I = -2.5
+pid_P = -7
+pid_I = -3
 pid_D = 0.01
-pid_target = 180
-pid_error = 0
-pid_error_avg = 0
-pid_integral = 0
-pid_integral_avg = 0
+pidTarget = 1400
+pidError = 0
+pidIntegral = 0
+timePrevious = datetime.now()
+
+lastThrottle = 0
+lastSpeed = 0
 
 while True:
 
@@ -39,99 +32,87 @@ while True:
     scale_value = 4
     threshold_factor = 0.2
 
-    for x in range(currentDepth.shape[0]):
-        for y in range(currentDepth.shape[1]):
-            if currentDepth[x][y] > 180:
-                current_frame[x][y] = 255
+    halfWidth = (currentDepth.shape[0]/2) - 2
 
-    feature_params = dict(maxCorners=300, qualityLevel=0.2, minDistance=2, blockSize=7)
-
-    # strongest corners in first frame
-    next_corners = cv2.goodFeaturesToTrack(current_frame, mask=None, **feature_params)
-
-    for i in range(next_corners.shape[0]):
-        current_frame = cv2.circle(current_frame, (next_corners[i][0][0], next_corners[i][0][1]), 3, 0, -1)
-
-    xNum = 0
-
-    distCounter = 0
-    dist = 0
-
-    for x in range(current_frame.shape[0]):
-        for y in range(current_frame.shape[1]):
-            if current_frame[x][y] != 0:
-                current_frame[x][y] = 255
+    for y in range(currentDepth.shape[0]):
+        for x in range(currentDepth.shape[1]):
+            if currentDepth[y][x] > 180 or y > halfWidth:
+                current_frame[y][x] = 255
             else:
-                distCounter += 1
-                dist += currentDepth[x][y]
-                if y > (currentDepth.shape[1]/2 + 10):
-                    xNum += 1
-                elif y < (currentDepth.shape[1]/2 - 10):
-                    xNum -= 1
-
-    dist /= distCounter
+                current_frame[y][x] = 0
 
     cv2.imshow("img", current_frame)
     cv2.waitKey(1)
 
+    distCounter = 0
+    dist = 0
+
+    xCounter = 0
+    lrDist = 0
+
+    for y in range(current_frame.shape[0]):
+        for x in range(current_frame.shape[1]):
+            if current_frame[y][x] == 0:
+                distCounter += 1
+                dist += currentDepth[y][x]
+                lrDist += x
+                xCounter += 1
+
+    if distCounter != 0:
+        dist /= distCounter
+
+    dist *= 10
+
+    if xCounter != 0:
+        lrDist /= xCounter
+
+    lrDist -= (currentDepth.shape[1]/2)
+    lrDist /= currentDepth.shape[1]/2
+
+    cv2.imshow("img", current_frame)
+    cv2.waitKey(1)
+
+    timeDiff = datetime.now() - timePrevious
+    timePrevious += timeDiff
+
+    previous_pid_error = pidError
+    previous_pid_integral = pidIntegral
+    pidError = (pidTarget - dist) + 200
+    pidIntegral = previous_pid_integral + previous_pid_error * (timeDiff.microseconds/1000)
+    pid_derivative = (pidError - previous_pid_error) / (timeDiff.microseconds/1000)
+    currentThrust = pid_P * pidError + pid_I * pidIntegral + pid_D * pid_derivative
+    # print(dist)
+    # print(pidError)
+    # print(currentThrust)
+
+    speed = (currentThrust/1000000) - lastThrottle
+    lastThrottle = (currentThrust/1000000)
+
+    print(speed)
+
+    if speed > 0.5:
+        speed = 0.5
+
+    if speed < -0.5:
+        speed = -0.5
+
+    lastSpeed = speed
+
     params = {
-        "steering": 0.0,
-        "throttle": 0.0
+        "steering": lrDist,
+        "throttle": speed  # (dist - 160) / 300
     }
 
-    if xNum > 0:
-        print("going right")
-        params = {
-            "steering": 0.4,
-            "throttle": 0.25,
-        }
-    elif xNum < 0:
-        print("going left")
-        params = {
-            "steering": -0.4,
-            "throttle": 0.25,
-        }
-
-    posteri_estimate_val = posteri_estimate
-    priori_estimate = posteri_estimate_val
-    priori_error_estimate += Q
-
-    blending_factor = priori_error_estimate / (priori_error_estimate + R)
-    posteri_estimate = priori_estimate + blending_factor * (dist - priori_estimate)
-    posteri_error_estimate = (1 - blending_factor) * priori_error_estimate
-    distance_filtered = posteri_estimate
-
-    # PID control init
-    previous_pid_error = pid_error
-    previous_pid_integral = pid_integral
-    desired_distance = pid_target
-    actual_distance = distance_filtered
-
-    # calculate pid error
-    pid_error = desired_distance - actual_distance
-
-    # calculate pid integral
-    pid_derivative = (pid_error - previous_pid_error) / 0.2
-    demo_derivative_val = abs(pid_derivative)
-    pid_integral = previous_pid_integral + previous_pid_error * 0.2
-
-    # update previous time
-    time_previous = time
-
-    # calculate current thrust with PID values
-    # params["throttle"] = -(pid_P * pid_error + pid_I * pid_integral + pid_D * pid_derivative)/100
-    params["throttle"] = (dist - 160) / 300
-
-    print("Points: " + str(xNum))
-    print("Distance: " + str(dist))
-    print("Speed: " + str(params["throttle"]))
+    # print("Points: " + str(xNum))
+    # print("Distance: " + str(dist))
+    # print("Speed: " + str(params["throttle"]))
+    # print("Steering: " + str(params["steering"]))
+    # print("")
 
     url = "http://127.0.0.1:5000/hub/control"
     requests.post(url, params=params)
 
     last_frame = current_frame
-
-    time.sleep(0.1)
 
 print("threshold: ", threshold)
 print("x_coordinates_val: ", x_val)
