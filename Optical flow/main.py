@@ -6,10 +6,10 @@ import base64
 from datetime import datetime
 
 # Initialize PID
-pid_P = -7
-pid_I = -3
-pid_D = 0.01
-pidTarget = 1400
+pid_P = -10
+pid_I = 0
+pid_D = 0
+pidTarget = 1200
 pidError = 0
 pidIntegral = 0
 timePrevious = datetime.now()
@@ -85,8 +85,8 @@ while True:
     # print(pidError)
     # print(currentThrust)
 
-    speed = (currentThrust/1000000) - lastThrottle
-    lastThrottle = (currentThrust/1000000)
+    speed = (currentThrust/10000)# - lastThrottle
+    lastThrottle = (currentThrust/10000)
 
     print(speed)
 
@@ -95,8 +95,6 @@ while True:
 
     if speed < -0.5:
         speed = -0.5
-
-    lastSpeed = speed
 
     params = {
         "steering": lrDist,
