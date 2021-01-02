@@ -200,7 +200,7 @@ class CarControls(MsgpackMixin):
 changes bool 
 
 /hub/controlState
-returns bool
+returns AI or STM
 
 
 /hub/accData

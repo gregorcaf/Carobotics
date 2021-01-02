@@ -325,7 +325,7 @@ def info():
     return send_from_directory("","help.txt")
 
 
-button_pressed = False
+button_pressed = True
 
 @app.route("/hub/buttonPressed")
 def button_pressed_func():
@@ -338,7 +338,10 @@ def button_pressed_func():
 
 @app.route("/hub/controlState")
 def control_state():
-    return str(button_pressed)
+    if(button_pressed):
+        return("STM")
+    return("AI")
+
 
 acc_data = None
 
