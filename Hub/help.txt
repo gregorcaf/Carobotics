@@ -195,3 +195,16 @@ class CarControls(MsgpackMixin):
 
 
 127.0.0.1:5000/hub/control?throttle=0&steering=0&brake=0&handbrake=False
+
+/hub/buttonPressed
+changes bool 
+
+/hub/controlState
+returns bool
+
+
+/hub/accData
+saves json object
+
+/hub/getAccData
+return same json object

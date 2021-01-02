@@ -325,6 +325,35 @@ def info():
     return send_from_directory("","help.txt")
 
 
+button_pressed = False
+
+@app.route("/hub/buttonPressed")
+def button_pressed_func():
+    global button_pressed
+    if(button_pressed):
+        button_pressed = False
+    else:
+        button_pressed = True
+    return("Done")
+
+@app.route("/hub/controlState")
+def control_state():
+    return str(button_pressed)
+
+acc_data = None
+
+@app.route("/hub/accData", methods = ['POST'])
+def acc_data_save():
+    global acc_data
+    acc_data = request.json
+    return("Done")
+
+@app.route("/hub/getAccData")
+def get_acc_data():
+    return acc_data
+
+
+
 if __name__ == "__main__":
     app.run()
 
