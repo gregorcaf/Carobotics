@@ -40,13 +40,13 @@ def enable():
 #  region CarState
 @app.route("/hub/{}".format(CarStateSensor))
 def sensor_all():
-    return str(client.getCarState())
+    return json.dumps(client.getCarState(), default=vars)
 
 @app.route("/hub/{}/<attr1>".format(CarStateSensor))
 def sensor_attr1(attr1):
     car = client.getCarState()
     try:
-        return str(getattr(car, attr1))
+        return json.dumps(getattr(car, attr1), default=vars)
     except AttributeError:
         return ('', 204)
 
@@ -54,7 +54,7 @@ def sensor_attr1(attr1):
 def sensor_attr2(attr1, attr2):
     car = client.getCarState()
     try:
-        return str(reduce(getattr,(attr1, attr2), car))
+        return json.dumps(reduce(getattr,(attr1, attr2), car), default=vars)
     except AttributeError:
         return ('', 204)
 
@@ -62,20 +62,20 @@ def sensor_attr2(attr1, attr2):
 def sensor_attr3(attr1, attr2, attr3):
     car = client.getCarState()
     try:
-        return str(reduce(getattr,(attr1, attr2, attr3), car))
+        return json.dumps(reduce(getattr,(attr1, attr2, attr3), car), default=vars)
     except AttributeError:
         return ('', 204)
 #  endregion
 #  region getGpsData
 @app.route("/hub/{}".format(getGpsData))
 def gps_all():
-    return str(client.getGpsData())
+    return json.dumps(client.getGpsData(), default=vars)
 
 @app.route("/hub/{}/<attr1>".format(getGpsData))
 def gps_attr1(attr1):
     car = client.getGpsData()
     try:
-        return str(getattr(car, attr1))
+        return json.dumps(getattr(car, attr1), default=vars)
     except AttributeError:
         return ('', 204)
 
@@ -83,7 +83,7 @@ def gps_attr1(attr1):
 def gps_attr2(attr1, attr2):
     car = client.getGpsData()
     try:
-        return str(reduce(getattr,(attr1, attr2), car))
+        return json.dumps(reduce(getattr,(attr1, attr2), car), default=vars)
     except AttributeError:
         return ('', 204)
 
@@ -91,7 +91,7 @@ def gps_attr2(attr1, attr2):
 def gps_attr3(attr1, attr2, attr3):
     car = client.getGpsData()
     try:
-        return str(reduce(getattr,(attr1, attr2, attr3), car))
+        return json.dumps(reduce(getattr,(attr1, attr2, attr3), car), default=vars)
     except AttributeError:
         return ('', 204)
 #  endregion
@@ -99,14 +99,14 @@ def gps_attr3(attr1, attr2, attr3):
 @app.route("/hub/{}".format(getImuData))
 def imu_all():
     car = client.getImuData(imu_name="Imu", vehicle_name="PhysXCar")
-    return str(car)
+    return json.dumps(car, default=vars)
 
 
 @app.route("/hub/{}/<attr1>".format(getImuData))
 def imu_attr1(attr1):
     car = client.getImuData(imu_name="Imu", vehicle_name="PhysXCar")
     try:
-        return str(getattr(car, attr1))
+        return json.dumps(getattr(car, attr1), default=vars)
     except AttributeError:
         return ('', 204)
 
@@ -114,7 +114,7 @@ def imu_attr1(attr1):
 def imu_attr2(attr1, attr2):
     car = client.getImuData(imu_name="Imu", vehicle_name="PhysXCar")
     try:
-        return str(reduce(getattr,(attr1, attr2), car))
+        return json.dumps(reduce(getattr,(attr1, attr2), car), default=vars)
     except AttributeError:
         return ('', 204)
 #  endregion
@@ -122,14 +122,14 @@ def imu_attr2(attr1, attr2):
 @app.route("/hub/{}".format(getBarometerData))
 def barometer_all():
     car = client.getBarometerData(barometer_name="Barometer", vehicle_name="PhysXCar")
-    return str(car)
+    return json.dumps(car, default=vars)
 
 
 @app.route("/hub/{}/<attr1>".format(getBarometerData))
 def barometer_attr1(attr1):
     car = client.getBarometerData(barometer_name="Barometer", vehicle_name="PhysXCar")
     try:
-        return str(getattr(car, attr1))
+        return json.dumps(getattr(car, attr1), default=vars)
     except AttributeError:
         return ('', 204)
 
@@ -138,14 +138,14 @@ def barometer_attr1(attr1):
 @app.route("/hub/{}".format(getMagnetometerData))
 def magnetometer_all():
     car = client.getMagnetometerData(magnetometer_name="Magnetometer", vehicle_name="PhysXCar")
-    return str(car)
+    return json.dumps(car, default=vars)
 
 
 @app.route("/hub/{}/<attr1>".format(getMagnetometerData))
 def magnetometer_attr1(attr1):
     car = client.getMagnetometerData(magnetometer_name="Magnetometer", vehicle_name="PhysXCar")
     try:
-        return str(getattr(car, attr1))
+        return json.dumps(getattr(car, attr1), default=vars)
     except AttributeError:
         return ('', 204)
 
@@ -153,7 +153,7 @@ def magnetometer_attr1(attr1):
 def magnetometer_attr2(attr1,attr2):
     car = client.getMagnetometerData(magnetometer_name="Magnetometer", vehicle_name="PhysXCar")
     try:
-        return str(reduce(getattr,(attr1, attr2), car))
+        return json.dumps(reduce(getattr,(attr1, attr2), car), default=vars)
     except AttributeError:
         return ('', 204)
 
@@ -162,14 +162,14 @@ def magnetometer_attr2(attr1,attr2):
 @app.route("/hub/{}".format(getDistanceSensorData))
 def distance_all():
     car = client.getDistanceSensorData()
-    return str(car)
+    return json.dumps(car, default=vars)
 
 
 @app.route("/hub/{}/<attr1>".format(getDistanceSensorData))
 def distance_attr1(attr1):
     car = client.getDistanceSensorData()
     try:
-        return str(getattr(car, attr1))
+        return json.dumps(getattr(car, attr1), default=vars)
     except AttributeError:
         return ('', 204)
 
@@ -177,7 +177,7 @@ def distance_attr1(attr1):
 def distance_attr2(attr1,attr2):
     car = client.getDistanceSensorData()
     try:
-        return str(reduce(getattr,(attr1, attr2), car))
+        return json.dumps(reduce(getattr,(attr1, attr2), car), default=vars)
     except AttributeError:
         return ('', 204)
 
@@ -185,27 +185,27 @@ def distance_attr2(attr1,attr2):
 def distance_attr3(attr1,attr2,attr3):
     car = client.getDistanceSensorData()
     try:
-        return str(reduce(getattr,(attr1, attr2, attr3), car))
+        return json.dumps(reduce(getattr,(attr1, attr2, attr3), car), default=vars)
     except AttributeError:
         return ('', 204)
 #  endregion
 #  region getCollisionInfo
 @app.route("/hub/{}".format(getCollisionInfo))
 def collision_all():
-    return str(collision_info)
+    return json.dumps(collision_info, default=vars)
 
 
 @app.route("/hub/{}/<attr1>".format(getCollisionInfo))
 def collision_attr1(attr1):
     try:
-        return str(getattr(collision_info, attr1))
+        return json.dumps(getattr(collision_info, attr1), default=vars)
     except AttributeError:
         return ('', 204)
 
 @app.route("/hub/{}/<attr1>/<attr2>".format(getCollisionInfo))
 def collision_attr2(attr1, attr2):
     try:
-        return str(reduce(getattr,(attr1, attr2), collision_info))
+        return json.dumps(reduce(getattr,(attr1, attr2), collision_info), default=vars)
     except AttributeError:
         return ('', 204)
 #  endregion
@@ -213,19 +213,19 @@ def collision_attr2(attr1, attr2):
 @app.route("/hub/Camera/<attr1>/scene")
 def get_image_scene(attr1):
     responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.Scene, False, True)])
-    return str(base64.b64encode(responses[0].image_data_uint8).decode('ascii'))
+    return json.dumps(base64.b64encode(responses[0].image_data_uint8).decode('ascii'), default=vars)
 @app.route("/hub/Camera/<attr1>/depthvis")
 def get_image_depth_vis(attr1):
     responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.DepthVis, False, True)])
-    return str(base64.b64encode(responses[0].image_data_uint8).decode('ascii'))
+    return json.dumps(base64.b64encode(responses[0].image_data_uint8).decode('ascii'), default=vars)
 @app.route("/hub/Camera/<attr1>/depthperspective")
 def get_image_depth_perspective(attr1):
     responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.DepthPerspective, False, True)])
-    return str(base64.b64encode(responses[0].image_data_uint8).decode('ascii'))
+    return json.dumps(base64.b64encode(responses[0].image_data_uint8).decode('ascii'), default=vars)
 @app.route("/hub/Camera/<attr1>/segmentation")
 def get_image_depth_segmentation(attr1):
     responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.Segmentation, False, True)])
-    return str(base64.b64encode(responses[0].image_data_uint8).decode('ascii'))
+    return json.dumps(base64.b64encode(responses[0].image_data_uint8).decode('ascii'), default=vars)
  #airsim.write_file(os.path.normpath('path/11.png'), responses[0].image_data_uint8)
 #  endregion
 #  endregion
@@ -308,13 +308,13 @@ def control():
 
 @app.route("/hub/getControl")
 def get_control():
-    return str(client.getCarControls())
+    return json.dumps(client.getCarControls(), default=vars)
 
 @app.route("/hub/getControl/<attr1>")
 def get_control_attr1(attr1):
     car = client.getCarControls()
     try:
-        return str(getattr(car, attr1))
+        return json.dumps(getattr(car, attr1), default=vars)
     except AttributeError:
         return ('', 204)
     
