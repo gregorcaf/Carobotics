@@ -348,7 +348,22 @@ acc_data = None
 @app.route("/hub/accData", methods = ['POST'])
 def acc_data_save():
     global acc_data
-    acc_data = request.json
+
+    # Temporary code for setting car controls based on data from STM3
+    acc_data = request.get_json(force=True)
+    if(button_pressed):
+        throttle = -float(acc_data['x'])
+        if throttle >= 0:
+            car_controls.throttle = throttle
+            car_controls.is_manual_gear = False
+            car_controls.manual_gear = 0
+            car_controls.brake = 0
+        else:
+            car_controls.is_manual_gear = True
+            car_controls.manual_gear = -1
+            car_controls.throttle = car_controls.brake = throttle  # AirSim bug
+        car_controls.steering = float(acc_data['y'])
+        client.setCarControls(car_controls)
     return("Done")
 
 @app.route("/hub/getAccData")

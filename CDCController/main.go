@@ -69,8 +69,6 @@ func main() {
 		}else {
 			fmt.Println("Unknown CDC Command")
 		}
-
-		fmt.Println(string(line))
 	}
 
 }
