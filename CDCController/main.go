@@ -60,7 +60,7 @@ func main() {
 				log.Fatalf("error when reading: %s", err.Error())
 			}
 
-			fmt.Printf("X: %.3f - Y: %.3f - Z: %.3f", accObject.X, accObject.Y, accObject.Z)
+			fmt.Printf("X: %.3f - Y: %.3f - Z: %.3f\n", accObject.X, accObject.Y, accObject.Z)
 			sendAccData(accObject)
 
 		}else if typeObject.Type == "button" {
@@ -75,7 +75,7 @@ func main() {
 
 func sendButtonPress() {
 
-	req, err := http.NewRequest("POST", os.Args[2] + "/hub/buttonPressed", nil)
+	req, err := http.NewRequest("GET", os.Args[2] + "/hub/buttonPressed", nil)
 	if err != nil {
 		fmt.Println(err)
 		return
