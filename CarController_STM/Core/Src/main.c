@@ -114,7 +114,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
         i2c1_beriRegistre(0x19, 0x28,(uint8_t*)&meritev[0], 6);
         if(sendingEnabled == 1) {
-            int length = sprintf(buf, "{\"type\":\"acc\", \"X\":%.3f, \"Y\":%.3f, \"Z\":%.3f}\n\r", ((float) meritev[0]) * 0.00012, ((float) meritev[1]) * 0.00012, ((float) meritev[2]) * 0.00012);
+            int length = sprintf(buf, "{\"type\":\"acc\", \"X\":%.3f, \"Y\":%.3f, \"Z\":%.3f}\n\r", ((float) meritev[0]) * 0.00012, ((float) -meritev[1]) * 0.00012, ((float) meritev[2]) * 0.00012);
             CDC_Transmit_FS(buf, length);
         }
     }
