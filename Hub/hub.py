@@ -17,6 +17,7 @@ getBarometerData = "Barometer"
 getMagnetometerData = "Magnetometer"
 getDistanceSensorData = "Distance"
 getCollisionInfo = "Collision"
+
 client = airsim.CarClient()
 client.confirmConnection()
 client.enableApiControl(True)
