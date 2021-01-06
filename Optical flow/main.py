@@ -19,12 +19,6 @@ lastSpeed = 0
 
 while True:
 
-    # time.sleep(0.25)
-
-    text = requests.get("http://127.0.0.1:5000/hub/Camera/0/scene")
-    nparrFrame = np.fromstring(base64.b64decode(text.content), np.uint8)
-    current_frame = cv2.imdecode(nparrFrame, cv2.IMREAD_GRAYSCALE).copy()
-
     depthRaw = requests.get("http://127.0.0.1:5000/hub/Camera/1/depthvis")
     nparrDepth = np.fromstring(base64.b64decode(depthRaw.content), np.uint8)
     currentDepth = cv2.imdecode(nparrDepth, cv2.IMREAD_GRAYSCALE).copy()
@@ -34,29 +28,22 @@ while True:
 
     halfWidth = (currentDepth.shape[0]/2) - 2
 
-    for y in range(currentDepth.shape[0]):
-        for x in range(currentDepth.shape[1]):
-            if currentDepth[y][x] > 180 or y > halfWidth:
-                current_frame[y][x] = 255
-            else:
-                current_frame[y][x] = 0
-
-    cv2.imshow("img", current_frame)
-    cv2.waitKey(1)
-
     distCounter = 0
     dist = 0
 
     xCounter = 0
     lrDist = 0
 
-    for y in range(current_frame.shape[0]):
-        for x in range(current_frame.shape[1]):
-            if current_frame[y][x] == 0:
+    for y in range(currentDepth.shape[0]):
+        for x in range(currentDepth.shape[1]):
+            if currentDepth[y][x] > 180 or y > halfWidth:
+                currentDepth[y][x] = 255
+            else:
                 distCounter += 1
                 dist += currentDepth[y][x]
                 lrDist += x
                 xCounter += 1
+                currentDepth[y][x] = 0
 
     if distCounter != 0:
         dist /= distCounter
@@ -69,7 +56,7 @@ while True:
     lrDist -= (currentDepth.shape[1]/2)
     lrDist /= currentDepth.shape[1]/2
 
-    cv2.imshow("img", current_frame)
+    cv2.imshow("img", currentDepth)
     cv2.waitKey(1)
 
     timeDiff = datetime.now() - timePrevious
@@ -110,7 +97,6 @@ while True:
     url = "http://127.0.0.1:5000/hub/control"
     requests.post(url, params=params)
 
-    last_frame = current_frame
 
 print("threshold: ", threshold)
 print("x_coordinates_val: ", x_val)
