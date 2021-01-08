@@ -59,23 +59,24 @@ public class show_objects : MonoBehaviour
         }catch(WebException ex){//če bomo kaj hendlali če ne dela 
         }
 
-        //tu pol zbriši samo primer je kak dobiš ven throttle recimo :)
+        // //tu pol zbriši samo primer je kak dobiš ven throttle recimo :)
 
 
-        //string response_string;
-        request = (HttpWebRequest)WebRequest.Create(@"http://127.0.0.1:5000/hub/getControl");
-        try
-        {
-            using(HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-            using(Stream stream = response.GetResponseStream())
-            using(StreamReader reader = new StreamReader(stream))
-            {
-                response_string = reader.ReadToEnd();
-                CarStateJson state = (CarStateJson)JsonUtility.FromJson(response_string, typeof(CarStateJson));
-                Debug.Log(state.throttle);
-            }
-        }catch(WebException ex){//če bomo kaj hendlali če ne dela 
-        }
-        //stm_obj.transform.Rotate(Vector3.up * 1.2f);
+        // //string response_string;
+        // request = (HttpWebRequest)WebRequest.Create(@"http://127.0.0.1:5000/hub/getControl");
+
+        // try
+        // {
+        //     using(HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+        //     using(Stream stream = response.GetResponseStream())
+        //     using(StreamReader reader = new StreamReader(stream))
+        //     {
+        //         response_string = reader.ReadToEnd();
+        //         CarStateJson state = (CarStateJson)JsonUtility.FromJson(response_string, typeof(CarStateJson));
+        //         Debug.Log(state.throttle);
+        //     }
+        // }catch(WebException ex){//če bomo kaj hendlali če ne dela 
+        // }
+        // //stm_obj.transform.Rotate(Vector3.up * 1.2f);
     }
 }

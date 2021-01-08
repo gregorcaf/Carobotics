@@ -3941,7 +3941,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 430767195}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.75, z: 7}
+  m_LocalPosition: {x: 0, y: 0.75, z: 4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1472270038}
@@ -10145,7 +10145,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1547970880}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.75, z: 10}
+  m_LocalPosition: {x: 0, y: 0.75, z: 5.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1472270038}
@@ -11453,9 +11453,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb2ef58f74d9841968eca142c1f27380, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  car_obj: {fileID: 1472270034}
   car_position: {fileID: 1472270038}
   mid_path_position: {fileID: 430767196}
   end_path_position: {fileID: 1547970881}
+  a: {x: 5, y: 0, z: 0}
+  b: {x: 5, y: 0, z: 0}
 --- !u!120 &1764488484
 LineRenderer:
   m_ObjectHideFlags: 0
@@ -11519,7 +11522,7 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0.47472408, g: 0.6190146, b: 0.7924528, a: 1}
+      key0: {r: 0.8773585, g: 0.8458284, b: 0.3517711, a: 1}
       key1: {r: 1, g: 1, b: 1, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
