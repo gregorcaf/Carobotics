@@ -62,8 +62,8 @@ all: main-build
 main-build: CarController.elf secondary-outputs
 
 # Tool invocations
-CarController.elf: $(OBJS) $(USER_OBJS) /Users/janhauptman/Carobotics/CarController_STM/STM32F411VETX_FLASH.ld
-	arm-none-eabi-gcc -o "CarController.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/janhauptman/Carobotics/CarController_STM/STM32F411VETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="CarController.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+CarController.elf: $(OBJS) $(USER_OBJS) /Users/rmk/Carobotics/CarController_STM/STM32F411VETX_FLASH.ld
+	arm-none-eabi-gcc -o "CarController.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/rmk/Carobotics/CarController_STM/STM32F411VETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="CarController.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

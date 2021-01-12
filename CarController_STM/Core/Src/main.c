@@ -20,6 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "queue.h"
 #include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -87,6 +88,15 @@ char button_buf[265];
 
 
 uint8_t button_pressed = 0;
+
+QueueHandle_t buttonQueue = NULL;
+QueueHandle_t sensorQueue = NULL;
+
+struct SensorData {
+	int16_t X;
+	int16_t Y;
+	int16_t Z;
+};
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -123,49 +133,18 @@ void initOrientation() {
     i2c1_pisiRegister(0x19, 0x23, 0x98);
 }
 
-/*oid HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-
-    if (GPIO_Pin == GPIO_PIN_4) {
-        HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
-        i2c1_beriRegistre(0x19, 0x28,(uint8_t*)&meritev[0], 6);
-        if(sendingEnabled == 1) {
-            int length = sprintf(buf, "{\"type\":\"acc\", \"X\":%.3f, \"Y\":%.3f, \"Z\":%.3f}\n\r", ((float) meritev[0]) * 0.00012, ((float) -meritev[1]) * 0.00012, ((float) meritev[2]) * 0.00012);
-            CDC_Transmit_FS(buf, length);
-        }
-    }
-
-}*/
 void reading(){
 	for(;;){
+		struct SensorData data;
 		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
-		i2c1_beriRegistre(0x19, 0x28,(uint8_t*)&meritev[0], 6);
+		i2c1_beriRegistre(0x19, 0x28,(uint8_t*)&data.X, 6);
+		xQueueSend( sensorQueue, &data, pdMS_TO_TICKS( 200 ) );
 		vTaskDelay(100);
 	}
 }
 
-/*void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-
-    if (htim->Instance == TIM4) {
-
-        if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0)) {
-            buttonStable++;
-        }else {
-            if(buttonStable > 50) {
-                HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
-                if(sendingEnabled == 0) {
-                    sendingEnabled = 1;
-                }else{
-                    int length = sprintf(buf, "{\"type\":\"button\"}\n\r");
-                    CDC_Transmit_FS(buf, length);
-                }
-            }
-
-            buttonStable = 0;
-        }
-    }
-}*/
-
 void button_reading(){
+	uint8_t data = 1;
 	for(;;){
 		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
 		if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0)) {
@@ -177,8 +156,10 @@ void button_reading(){
                     sendingEnabled = 1;
                 }else{
                     button_pressed = 1;
+                    xQueueSend( buttonQueue, &data, pdMS_TO_TICKS( 200 ) );
                 }
             }
+
 
             buttonStable = 0;
         }
@@ -187,32 +168,26 @@ void button_reading(){
 }
 
 void sensor_transmitting(){
+	struct SensorData data;
 	for(;;){
+		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
+		xQueueReceive( sensorQueue, &data, portMAX_DELAY );
 		if(sendingEnabled==1){
-			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
-			int length = sprintf(&data_buf, "{\"type\":\"acc\", \"X\":%.3f, \"Y\":%.3f, \"Z\":%.3f}\n\r", ((float) meritev[0]) * 0.00012, ((float) -meritev[1]) * 0.00012, ((float) meritev[2]) * 0.00012);
+			int length = sprintf(&data_buf, "{\"type\":\"acc\", \"X\":%.3f, \"Y\":%.3f, \"Z\":%.3f}\n\r", ((float) data.X) * 0.00012, ((float) -data.Y) * 0.00012, ((float) data.Z) * 0.00012);
 			CDC_Transmit_FS(&data_buf, length);
-
-
 		}
-
-
-		vTaskDelay(100);
 	}
 }
 
 void button_transmitting(){
+	uint8_t data;
 	for(;;){
 		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
+		xQueueReceive( buttonQueue, &data, portMAX_DELAY );
 		if(sendingEnabled==1){
-			if (button_pressed == 1){
-							int length = sprintf(&button_buf, "{\"type\":\"button\"}\n\r");
-							CDC_Transmit_FS(&button_buf, length);
-							button_pressed = 0;
-			}
+			int length = sprintf(&button_buf, "{\"type\":\"button\"}\n\r");
+			CDC_Transmit_FS(&button_buf, length);
 		}
-
-		vTaskDelay(500);
 	}
 }
 /* USER CODE END 0 */
@@ -256,6 +231,9 @@ int main(void)
 
     initOrientation();
     i2c1_beriRegistre(0x19, 0x28,(uint8_t*)&meritev[0], 6);
+
+    buttonQueue = xQueueCreate( 4, sizeof( uint8_t ) );
+    sensorQueue = xQueueCreate( 4, sizeof( struct SensorData ) );
 
     TaskHandle_t readingHandle = NULL;
     TaskHandle_t button_readingHandle = NULL;
