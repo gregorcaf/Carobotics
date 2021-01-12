@@ -19,11 +19,13 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 #include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "usbd_cdc_if.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,6 +52,13 @@ SPI_HandleTypeDef hspi1;
 
 TIM_HandleTypeDef htim4;
 
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 128 * 4
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -62,6 +71,8 @@ static void MX_I2S2_Init(void);
 static void MX_I2S3_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_TIM4_Init(void);
+void StartDefaultTask(void *argument);
+
 /* USER CODE BEGIN PFP */
 uint8_t i2c1_pisiRegister(uint8_t, uint8_t, uint8_t);
 void i2c1_beriRegistre(uint8_t, uint8_t, uint8_t*, uint8_t);
@@ -71,7 +82,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 int16_t meritev[3];
 uint32_t buttonStable = 0;
 uint8_t sendingEnabled = 0;
-char buf[265];
+char data_buf[265];
+char button_buf[265];
+
+
+uint8_t button_pressed = 0;
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -108,7 +123,7 @@ void initOrientation() {
     i2c1_pisiRegister(0x19, 0x23, 0x98);
 }
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+/*oid HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
     if (GPIO_Pin == GPIO_PIN_4) {
         HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
@@ -119,9 +134,16 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         }
     }
 
+}*/
+void reading(){
+	for(;;){
+		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
+		i2c1_beriRegistre(0x19, 0x28,(uint8_t*)&meritev[0], 6);
+		vTaskDelay(100);
+	}
 }
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+/*void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
     if (htim->Instance == TIM4) {
 
@@ -141,6 +163,57 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
             buttonStable = 0;
         }
     }
+}*/
+
+void button_reading(){
+	for(;;){
+		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
+		if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0)) {
+            buttonStable++;
+        }else {
+            if(buttonStable > 5) {
+
+                if(sendingEnabled == 0) {
+                    sendingEnabled = 1;
+                }else{
+                    button_pressed = 1;
+                }
+            }
+
+            buttonStable = 0;
+        }
+        vTaskDelay(10);
+	}
+}
+
+void sensor_transmitting(){
+	for(;;){
+		if(sendingEnabled==1){
+			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
+			int length = sprintf(&data_buf, "{\"type\":\"acc\", \"X\":%.3f, \"Y\":%.3f, \"Z\":%.3f}\n\r", ((float) meritev[0]) * 0.00012, ((float) -meritev[1]) * 0.00012, ((float) meritev[2]) * 0.00012);
+			CDC_Transmit_FS(&data_buf, length);
+
+
+		}
+
+
+		vTaskDelay(100);
+	}
+}
+
+void button_transmitting(){
+	for(;;){
+		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
+		if(sendingEnabled==1){
+			if (button_pressed == 1){
+							int length = sprintf(&button_buf, "{\"type\":\"button\"}\n\r");
+							CDC_Transmit_FS(&button_buf, length);
+							button_pressed = 0;
+			}
+		}
+
+		vTaskDelay(500);
+	}
 }
 /* USER CODE END 0 */
 
@@ -177,15 +250,85 @@ int main(void)
   MX_I2S3_Init();
   MX_SPI1_Init();
   MX_TIM4_Init();
-  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
     HAL_TIM_Base_Start_IT(&htim4);
     __HAL_I2C_ENABLE(&hi2c1);
 
     initOrientation();
     i2c1_beriRegistre(0x19, 0x28,(uint8_t*)&meritev[0], 6);
+
+    TaskHandle_t readingHandle = NULL;
+    TaskHandle_t button_readingHandle = NULL;
+    TaskHandle_t transmittingHandle = NULL;
+
+    xTaskCreate(
+    		reading,       /* Function that implements the task. */
+            "Reading",          /* Text name for the task. */
+			256,      /* Stack size in words, not bytes. */
+            ( void * ) 1,    /* Parameter passed into the task. */
+            tskIDLE_PRIORITY,/* Priority at which the task is created. */
+            &readingHandle );      /* Used to pass out the created task's handle. */
+
+    xTaskCreate(
+    		button_reading,       /* Function that implements the task. */
+    		"ButtonReading",          /* Text name for the task. */
+			256,      /* Stack size in words, not bytes. */
+    		( void * ) 1,    /* Parameter passed into the task. */
+    		tskIDLE_PRIORITY,/* Priority at which the task is created. */
+    		&button_readingHandle );      /* Used to pass out the created task's handle. */
+
+    xTaskCreate(
+    		button_transmitting,       /* Function that implements the task. */
+    		"ButtonTransmitting",          /* Text name for the task. */
+			256,      /* Stack size in words, not bytes. */
+    		( void * ) 1,    /* Parameter passed into the task. */
+    		tskIDLE_PRIORITY+1,/* Priority at which the task is created. */
+    		&transmittingHandle );      /* Used to pass out the created task's handle. */
+
+    xTaskCreate(
+       		sensor_transmitting,       /* Function that implements the task. */
+       		"SensorTransmitting",          /* Text name for the task. */
+       		256,      /* Stack size in words, not bytes. */
+       		( void * ) 1,    /* Parameter passed into the task. */
+       		tskIDLE_PRIORITY+1,/* Priority at which the task is created. */
+       		&transmittingHandle );      /* Used to pass out the created task's handle. */
   /* USER CODE END 2 */
 
+  /* Init scheduler */
+  osKernelInitialize();
+
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* creation of defaultTask */
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
+
+  /* Start scheduler */
+  vTaskStartScheduler();
+
+  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -515,7 +658,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(OTG_FS_OverCurrent_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 
 }
@@ -523,6 +666,26 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_StartDefaultTask */
+/**
+  * @brief  Function implementing the defaultTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void *argument)
+{
+  /* init code for USB_DEVICE */
+  MX_USB_DEVICE_Init();
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END 5 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
