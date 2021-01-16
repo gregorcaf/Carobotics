@@ -25,19 +25,62 @@ timePrevious = datetime.now()
 lastThrottle = 0
 lastSpeed = 0
 
-while True:
+# while True:
 
-    try:
-        depthRaw = requests.get("http://127.0.0.1:5000/hub/Camera/1/scene")
-        nparrDepth = np.fromstring(base64.b64decode(depthRaw.content), np.uint8)
-        currentDepth = cv2.imdecode(nparrDepth, cv2.IMREAD_COLOR).copy()
+#     try:
+#         depthRaw = requests.get("http://127.0.0.1:5000/hub/Camera/1/scene")
+#         nparrDepth = np.fromstring(base64.b64decode(depthRaw.content), np.uint8)
+#         currentDepth = cv2.imdecode(nparrDepth, cv2.IMREAD_COLOR).copy()
 
-        print(currentDepth.shape)
-        cv2.imshow("img", currentDepth)
-        cv2.waitKey(1)
-    except:
-        print("error ni dobo sliko")
-    time.sleep(.25)
+#         print(currentDepth.shape)
+#         # cv2.imshow("img", currentDepth)
+#         # cv2.waitKey(1)
+#     except:
+#         print("error ni dobo sliko")
+
+
+image = cv2.imread("slika.jpg")
+height = image.shape[0]
+width = image.shape[1]
+
+
+
+"""ZAZNAVA RDEČE OGRAJE"""
+# image = image[height//2:,:,:]
+# hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+# lower_red = np.array([0,50,50])
+# upper_red = np.array([10,255,255])
+# mask0 = cv2.inRange(hsv, lower_red, upper_red)
+
+# lower_red = np.array([170,50,50])
+# upper_red = np.array([180,255,255])
+# mask1 = cv2.inRange(hsv, lower_red, upper_red)
+
+# output_img = mask0+mask1
+
+
+
+"""ZAZNAVA ORANŽNIH ČRT NA CESTI"""
+image = image[height//2:,:,:]
+hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+output_img = cv2.inRange(hsv,(10, 100, 20), (25, 255, 255))
+
+
+
+
+print(output_img.shape)
+cv2.imshow("window_name", output_img) 
+cv2.waitKey(0)
+
+
+
+
+
+
+
+
+
 
 #     scale_value = 4
 #     threshold_factor = 0.2
