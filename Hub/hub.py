@@ -214,7 +214,7 @@ def collision_attr2(attr1, attr2):
 @app.route("/hub/Camera/<attr1>/scene")
 def get_image_scene(attr1):
     responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.Scene, False, True)])
-    return json.dumps(base64.b64encode(responses[0].image_data_uint8).decode('ascii'), default=vars)
+    return base64.b64encode(responses[0].image_data_uint8).decode('ascii')
 @app.route("/hub/Camera/<attr1>/depthvis")
 def get_image_depth_vis(attr1):
     responses = client.simGetImages([airsim.ImageRequest(attr1, airsim.ImageType.DepthVis, False, True)])
@@ -275,6 +275,8 @@ def wether():
 #  region Control
 @app.route("/hub/control", methods = ['POST'])
 def control():
+    if(button_pressed):
+        return("Done")
     throttle = request.args.get("throttle")
     if(throttle!=None):
         if float(throttle) >= 0:

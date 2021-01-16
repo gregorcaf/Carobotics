@@ -3,7 +3,7 @@ import requests
 import time
 import cv2
 import base64
-from PIL import Image
+# from PIL import Image
 from io import StringIO
 from datetime import datetime
 
@@ -25,21 +25,54 @@ timePrevious = datetime.now()
 lastThrottle = 0
 lastSpeed = 0
 
-# while True:
+while True:
 
-#     try:
-#         depthRaw = requests.get("http://127.0.0.1:5000/hub/Camera/1/scene")
-#         nparrDepth = np.fromstring(base64.b64decode(depthRaw.content), np.uint8)
-#         currentDepth = cv2.imdecode(nparrDepth, cv2.IMREAD_COLOR).copy()
+    try:
+        depthRaw = requests.get("http://127.0.0.1:5000/hub/Camera/1/scene")
+        nparrDepth = np.fromstring(base64.b64decode(depthRaw.content), np.uint8)
+        image = cv2.imdecode(nparrDepth, cv2.IMREAD_COLOR).copy()
 
-#         print(currentDepth.shape)
-#         # cv2.imshow("img", currentDepth)
-#         # cv2.waitKey(1)
-#     except:
-#         print("error ni dobo sliko")
+        image = image[image.shape[0] // 2:, :, :]
+        height = image.shape[0]
+        width = image.shape[1]
+
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        lower_red = np.array([0,50,50])
+        upper_red = np.array([10,255,255])
+        mask0 = cv2.inRange(hsv, lower_red, upper_red)
+        lower_red = np.array([170,50,50])
+        upper_red = np.array([180,255,255])
+        mask1 = cv2.inRange(hsv, lower_red, upper_red)
+        output_img = mask0+mask1
+
+        black_left = np.count_nonzero(output_img[:, :width // 2] == 0)
+        black_right = np.count_nonzero(output_img[:, width // 2:] == 0)
+
+        """ calculate steering """
+        steering = (black_right - black_left) / ((width * height) / 2)
+
+        params = {
+            "steering": steering,
+            "throttle": 0.1
+        }
+
+        url = "http://127.0.0.1:5000/hub/control"
+        requests.post(url, params=params)
+
+        print("black left: {}\nblack right: {}\nsteering: {}".format(black_left, black_right, steering))
+        print(output_img.shape)
+        cv2.imshow("window_name", output_img)
+        cv2.waitKey(1)
+        wait(1000)
+
+        # print(currentDepth.shape)
+        # cv2.imshow("img", currentDepth)
+        # cv2.waitKey(1)
+    except:
+        print("error ni dobo sliko")
 
 
-image = cv2.imread("slika.jpg")
+# image = cv2.imread("slika.jpg")
 height = image.shape[0]
 width = image.shape[1]
 image = image[height//2:,:,:]
