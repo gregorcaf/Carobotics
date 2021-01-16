@@ -42,11 +42,10 @@ lastSpeed = 0
 image = cv2.imread("slika.jpg")
 height = image.shape[0]
 width = image.shape[1]
+image = image[height//2:,:,:]
 
 
-
-"""ZAZNAVA RDEČE OGRAJE"""
-# image = image[height//2:,:,:]
+""" ZAZNAVA RDEČE OGRAJE """
 # hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
 # lower_red = np.array([0,50,50])
@@ -60,18 +59,27 @@ width = image.shape[1]
 # output_img = mask0+mask1
 
 
-
-"""ZAZNAVA ORANŽNIH ČRT NA CESTI"""
-image = image[height//2:,:,:]
+""" ZAZNAVA ORANŽNIH ČRT NA CESTI """
 hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 output_img = cv2.inRange(hsv,(10, 100, 20), (25, 255, 255))
 
 
+""" count black pixels """
+black_left = np.count_nonzero(output_img[:,:width//2] == 0)
+black_right = np.count_nonzero(output_img[:,width//2:] == 0)
 
+""" calculate steering """
+steering = (black_right - black_left) / ((width * height) / 2)
 
+""" test print for debug """
+print("black left: {}\nblack right: {}\nsteering: {}".format(black_left, black_right, steering))
 print(output_img.shape)
 cv2.imshow("window_name", output_img) 
 cv2.waitKey(0)
+
+
+
+
 
 
 
