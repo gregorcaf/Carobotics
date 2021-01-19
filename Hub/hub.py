@@ -9,6 +9,8 @@ from flask import jsonify, Flask, request, send_from_directory
 from functools import reduce
 from decimal import Decimal
 
+from MM import MM, IMM
+import json
 #  region Global var
 CarStateSensor = "CarState"
 getGpsData = "GpsData"
@@ -367,11 +369,15 @@ def acc_data_save():
             car_controls.throttle = car_controls.brake = throttle  # AirSim bug
         car_controls.steering = float(acc_data['y'])
         client.setCarControls(car_controls)
+
+    #MM
+    acc_data = MM(json.dumps(acc_data))
     return("Done")
 
 @app.route("/hub/getAccData")
 def get_acc_data():
-    return acc_data
+    #return acc_data MM
+    return json.loads(IMM(acc_data))
 
 
 
