@@ -1,3 +1,3 @@
 # Carobotics
 
-AirSim je najbolj retardirana stvar kaj obstaja :)
+AirSim je najboljša stvar kaj obstaja :)
